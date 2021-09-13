@@ -1,16 +1,20 @@
 import {
-    BadRequestException,
-    ConflictException,
-    Injectable,
-    NotFoundException
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { User } from './user.entity';
 import { UsersService } from './users.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
 
   async signUp(email: string, password: string): Promise<User> {
     const existing = await this.usersService.findByEmail(email);
@@ -32,15 +36,19 @@ export class AuthService {
   async signIn(email: string, password: string): Promise<string> {
     const [user] = await this.usersService.findByEmail(email);
 
-    if (!user) {
-      throw new NotFoundException('User not found...');
-    } else if (
-      email === user.email &&
-      (await bcrypt.compare(password, user.password))
-    ) {
-      return 'success';
+    if (user) {
+      if (
+        email === user.email &&
+        (await bcrypt.compare(password, user.password))
+      ) {
+        const payload = { email };
+        const accessToken = this.jwtService.sign(payload);
+        return accessToken;
+      } else {
+        throw new BadRequestException('Oops! Wrong email or password...');
+      }
     } else {
-      throw new BadRequestException('Oops! Wrong email or password...');
+      throw new NotFoundException('User not found...');
     }
   }
 }
