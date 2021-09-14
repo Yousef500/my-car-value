@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -8,9 +9,10 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private jwtService: JwtService,
   ) {}
 
-  async signUp(email: string, password: string): Promise<User> {
+  async signUp(email: string, password: string): Promise<string> {
     const user = await this.usersRepository.create({
       email,
       password,
@@ -18,7 +20,10 @@ export class UsersService {
 
     this.usersRepository.save(user);
 
-    return user;
+    const payload = { email };
+    const accessToken = this.jwtService.sign(payload);
+
+    return accessToken;
   }
 
   async findById(id: string): Promise<User> {

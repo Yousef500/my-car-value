@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { User } from './user.entity';
 import { UsersService } from './users.service';
 
 @Injectable()
@@ -16,7 +15,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signUp(email: string, password: string): Promise<User> {
+  async signUp(email: string, password: string): Promise<string> {
     const existing = await this.usersService.findByEmail(email);
 
     if (existing.length) {
