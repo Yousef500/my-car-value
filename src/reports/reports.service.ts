@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { CreateReportDto } from './dtos/create-report.dto';
 import { Report } from './report.entity';
 
 @Injectable()
@@ -13,5 +14,10 @@ export class ReportsService {
   async findAll() {
     const reports = await this.reportsRepository.find();
     return reports;
+  }
+
+  createReport(reportDto: CreateReportDto) {
+    const report = this.reportsRepository.create(reportDto);
+    return this.reportsRepository.save(report);
   }
 }
