@@ -7,7 +7,7 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -19,7 +19,6 @@ import { Serialize } from './interceptors/serialize.interceptor';
 import { User } from './user.entity';
 import { UsersService } from './users.service';
 
-@Serialize(UserDto)
 @Controller('auth')
 export class UsersController {
   constructor(
@@ -45,12 +44,12 @@ export class UsersController {
 
   @UseGuards(AuthGuard())
   @Get()
-  findUsers(
+  async findUsers(
     @Query('email') email: string,
     @GetUser() user: User,
   ): Promise<User[]> {
-    console.log(user);
-    return this.usersService.findByEmail(email);
+    const [foundUser] = await this.usersService.findByEmail(email);
+    return [user, foundUser];
   }
 
   @UseGuards(AuthGuard())
